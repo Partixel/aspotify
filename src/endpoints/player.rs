@@ -305,6 +305,32 @@ impl Player<'_> {
             .await
     }
 
+    /// Queues a track (Beta).
+    ///
+    /// Requires `user-modify-playback-state`. This action complete asynchronously, meaning you will
+    /// not know if it succeeded unless you check.
+    ///
+    /// `id`, id of the track to add to the queue.
+    ///
+    /// [Reference](https://developer.spotify.com/documentation/web-api/reference/#endpoint-add-to-queue).
+    pub async fn queue(self, id: &str, device_id: Option<&str>) -> Result<(), Error> {
+        let id = &format!("spotify:track:{}", id) as &str;
+        let mut params = vec![("uri", id)];
+        if let Some(device_id) = device_id {
+            params.insert(1, ("device_id", device_id));
+        }
+
+        self.0
+            .send_empty(
+                self.0
+                    .client
+                    .post(endpoint!("/v1/me/player/queue"))
+                    .query(&params)
+                    .body("{}"),
+            )
+            .await
+    }
+
     /// Resume playback (Beta).
     ///
     /// Requires `user-modify-playback-state`. This action complete asynchronously, meaning you will
